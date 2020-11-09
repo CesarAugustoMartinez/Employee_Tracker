@@ -1,4 +1,5 @@
 const logo = require('asciiart-logo');
+const connection = require("./db/connection")
 
 console.log( // Creating a logo for the app using the package 'asciiart-logo'
     logo({
@@ -17,3 +18,13 @@ console.log( // Creating a logo for the app using the package 'asciiart-logo'
     .center('Author: Cesar A Martinez')
     .render()
 );
+
+
+// connect to the mysql server and sql database
+connection.connect(function(err) {
+    if (err) throw err;
+    // run the start function after the connection is made to prompt the user
+    console.log("Connected as id " + connection.threadId + "\n");
+    // start();
+  });
+
