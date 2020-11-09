@@ -187,16 +187,10 @@ function viewEmployeesManager(){
             chosenManager = res[i].id;
           }
         }
-        var query = "SELECT * FROM employee WHERE ?";
-        connection.query(query,
-            [ 
-             {
-                manager_id: chosenManager
-             } 
-            ], 
-            function(err, res) {
+        var query = `SELECT * FROM employee WHERE manager_id=${chosenManager}`;
+        connection.query(query,function(err, res) {
                 if (err) throw err;
-                console.log("Selecting all Employees ....\n");    
+                console.log("Selecting all Employees....\n");    
                 console.table(res);
                 start();
             });               
