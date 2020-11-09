@@ -4,7 +4,7 @@ CREATE DATABASE employee_tracker_db;
 
 USE employee_tracker_db;
 
-CREATE TABLE deparment (
+CREATE TABLE department (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(30) NOT NULL,
   PRIMARY KEY (id)
@@ -16,7 +16,7 @@ CREATE TABLE role (
   salary DECIMAL(10,4) NOT NULL,
   department_id INT NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (department_id) REFERENCES deparment(id)
+  FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
 
@@ -30,12 +30,5 @@ CREATE TABLE employee (
   FOREIGN KEY (role_id) REFERENCES role(id),
   FOREIGN KEY (manager_id) REFERENCES employee(id)
 );
-
-
-
-
-
--- INSERT INTO products (flavor, price, quantity)
--- VALUES ("vanilla", 2.50, 100);
 
 
