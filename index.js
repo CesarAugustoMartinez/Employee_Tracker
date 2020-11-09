@@ -59,20 +59,24 @@ function start() {
       .then(function(answer) {
         switch (answer.action) {
         case "View all Employees":
-          viewEmployees();
-          break;
+            console.clear();
+            viewEmployees();
+            break;
   
         case "View all Roles":
-          viewRoles();
-          break;
+            console.clear();
+            viewRoles();
+            break;
   
         case "View all Departments":
-          viewDepartments();
-          break;
+            console.clear();  
+            viewDepartments();
+            break;
 
         case "View all Employees by Manager":
-          viewEmployeesManager();
-          break;
+            console.clear();
+            viewEmployeesManager();
+            break;
   
         case "Exit":
           connection.end();
@@ -181,16 +185,17 @@ function viewEmployeesManager(){
       ])
       .then(function(answer) {
         // get the information of the chosen manager
-        var chosenManager;
+        var chosenManagerId;
         for (var i = 0; i < res.length; i++) {
-          if ((res[i].first_name + " " + res[i].last_name) === answer.choice) {
-            chosenManager = res[i].id;
+          if (res[i].first_name + " " + res[i].last_name === answer.choice) {
+            var chosenManager = (res[i].first_name + " " + res[i].last_name);  
+            chosenManagerId = res[i].id;
           }
         }
-        var query = `SELECT * FROM employee WHERE manager_id=${chosenManager}`;
+        var query = `SELECT * FROM employee WHERE manager_id=${chosenManagerId}`;
         connection.query(query,function(err, res) {
                 if (err) throw err;
-                console.log("Selecting all Employees....\n");    
+                console.log("Selecting all Employees whose Manager is " + chosenManager + "\n");    
                 console.table(res);
                 start();
             });               
