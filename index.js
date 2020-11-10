@@ -85,6 +85,11 @@ function start() {
             console.clear();
             addRole();
             break;
+        case "Add Employee":
+            console.clear();
+            addEmployee();
+            break;
+        
   
         case "Exit":
           connection.end();
@@ -258,7 +263,7 @@ function addRole(){
           name: "choice",
           type: "rawlist",
           choices: function() {
-            departmentArray = [];
+            let departmentArray = [];
             for (var i = 0; i < res.length; i++) {
                   departmentArray.push(res[i].name);
                 }           
@@ -297,5 +302,84 @@ function addRole(){
             // Something else when wrong
             }
     });
+  }); 
+}
+
+function addEmployee(){
+  connection.query("SELECT * FROM role", function(err, res) {
+  if (err) throw err;
+      connection.query("SELECT * FROM employee",function(errEmployee, resEmployee){
+      if (errEmployee) throw errEmployee;
+      inquirer
+            .prompt([{            
+                name: "first_name",
+                type: "input",
+                message: "Please, enter First Name: "
+            }, {            
+                name: "last_name",
+                type: "input",
+                message: "Please, enter Last Name: "
+            },{
+              name: "choiceRole",
+              type: "rawlist",
+              message: "Select a Role:",
+              choices: function() {
+                let rolesArray = [];
+                for (var i = 0; i < res.length; i++) {
+                      rolesArray.push(res[i].title);
+                    }           
+                return rolesArray;
+                }              
+              },
+              {
+                name: "choiceManager",
+                type: "rawlist",
+                message: "Select a Manager:",
+                choices: function() {
+                  let managersArray = [];
+                  for (var i = 0; i < resEmployee.length; i++) {
+                        managersArray.push(resEmployee[i].first_name + " " + resEmployee[i].last_name);
+                      }           
+                  return managersArray;
+                  }                
+                }
+            ])
+            .then(answers => {
+                // Searching department Id from query.
+                // let roleId;
+                // connection.query(`SELECT id FROM role WHERE title = '${answers.choiceRole}'`, function(err,res){
+                //   if (err) throw err;
+                //   console.table(res);
+                //   roleId = res.id;
+                // });
+                let managerId;
+                for (var i = 0; i < resEmployee.length; i++) {
+                  if (resEmployee[i].first_name + " " + resEmployee[i].last_name === answers.choiceManager) {
+                    managerId = resEmployee[i].id;
+                  }                
+                }               
+                let roleId;
+                for (var i = 0; i < res.length; i++) {
+                  if (res[i].title === answers.choiceRole) {
+                    roleId = res[i].id;
+                  }                
+                }
+                console.log("Creating new Employee...\n");
+                //Inserting new value to role table
+                connection.query("INSERT INTO employee SET ?",
+                {
+                    first_name: answers.first_name,
+                    last_name: answers.last_name,
+                    role_id: roleId,
+                    manager_id: managerId              
+                },
+                function(err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " record inserted!\n");
+                    start();
+                }
+                );
+            })            
+      });      
   }); 
 }
