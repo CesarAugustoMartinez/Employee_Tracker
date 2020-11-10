@@ -77,6 +77,14 @@ function start() {
             console.clear();
             viewEmployeesManager();
             break;
+        case "Add Department":
+            console.clear();
+            addDepartment();
+            break;
+        case "Add Role":
+            console.clear();
+            addRole();
+            break;
   
         case "Exit":
           connection.end();
@@ -201,4 +209,93 @@ function viewEmployeesManager(){
             });               
       });
   });
+}
+
+function addDepartment(){
+  inquirer
+        .prompt({            
+            name: "name",
+            type: "input",
+            message: "Please, enter name of new Department: "
+        })
+        .then(answers => {
+            //Inserting new value to department table
+            console.log("Creating new department...\n");
+            connection.query("INSERT INTO department SET ?",
+            {
+                name: answers.name                
+            },
+            function(err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " record inserted!\n");
+                // Call updateProduct AFTER the INSERT completes                
+                start();
+            }
+            );
+        })
+        .catch(error => {
+            if(error.isTtyError) {
+            // Prompt couldn't be rendered in the current environment
+            } else {
+            // Something else when wrong
+            }
+    });
+}
+
+function addRole(){
+  connection.query("SELECT * FROM department", function(err, res) {
+  if (err) throw err;
+  inquirer
+        .prompt([{            
+            name: "title",
+            type: "input",
+            message: "Please, enter the new title: "
+        }, {            
+            name: "salary",
+            type: "input",
+            message: "Please, enter the salary: "
+        },{
+          name: "choice",
+          type: "rawlist",
+          choices: function() {
+            departmentArray = [];
+            for (var i = 0; i < res.length; i++) {
+                  departmentArray.push(res[i].name);
+                }           
+            return departmentArray;
+            },
+          message: "What Department would you like to select?"
+          }
+        ])
+        .then(answers => {
+            // Searching department Id from query.
+            let departmentID;
+            for (i=0; i< res.length;i++){
+               if (res[i].name === answers.choice) {
+                 departmentID = res[i].id;
+               } 
+            }
+            console.log("Creating new Role...\n");
+            //Inserting new value to role table
+            connection.query("INSERT INTO role SET ?",
+            {
+                title: answers.title,
+                salary: parseInt(answers.salary),
+                department_id: departmentID              
+            },
+            function(err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " record inserted!\n");
+                start();
+            }
+            );
+        })
+        .catch(error => {
+            if(error.isTtyError) {
+            // Prompt couldn't be rendered in the current environment
+            } else {
+            // Something else when wrong
+            }
+    });
+  }); 
 }
