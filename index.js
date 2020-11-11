@@ -93,7 +93,10 @@ function start() {
             console.clear();
             updateEmployeeRole();
             break;
-  
+        case "Update Employee Manager":
+            console.clear();
+            updateEmployeeManager();
+            break;
         case "Exit":
           connection.end();
           break;
@@ -390,8 +393,8 @@ function addEmployee(){ // Function to add a new employee
 function updateEmployeeRole(){ // Function to update the role of a selected employee
   connection.query("SELECT * FROM employee", function(err, resEmployee) {
   if (err) throw err;
-      connection.query("SELECT * FROM role",function(errEmployee, resRole){
-      if (errEmployee) throw errEmployee;
+      connection.query("SELECT * FROM role",function(err, resRole){
+      if (err) throw err;
       inquirer
             .prompt([ 
               {
@@ -449,3 +452,76 @@ function updateEmployeeRole(){ // Function to update the role of a selected empl
       });      
   }); 
 }
+
+function updateEmployeeManager(){ // Function to update the role of a selected employee
+  connection.query("SELECT * FROM employee", function(err, resEmployee) {
+  if (err) throw err;
+      connection.query("SELECT * FROM employee",function(err, resManager){
+      if (err) throw err;
+      inquirer
+            .prompt([ 
+              {
+                name: "choiceEmployee", // Prompt list to select the employe who will update the role
+                type: "rawlist",
+                message: "Select a Employee to Update The Role:",
+                choices: function() {
+                  let employeeArray = [];
+                  for (var i = 0; i < resEmployee.length; i++) {
+                        employeeArray.push(resEmployee[i].first_name + " " + resEmployee[i].last_name);
+                      }           
+                  return employeeArray;
+                  }                
+                }
+            ])
+            .then(answers => {
+                let employeeId;
+                for (var i = 0; i < resEmployee.length; i++) { 
+                  if (resEmployee[i].first_name + " " + resEmployee[i].last_name === answers.choiceEmployee) {
+                    employeeId = resEmployee[i].id;
+                  }                
+                }
+                console.log(employeeId);            
+                inquirer
+                  .prompt([ 
+                    {
+                      name: "choiceManager", // Prompt list to select new Manager
+                      type: "rawlist",
+                      message: "Select a Manager:",
+                      choices: function() {
+                        let managerArray = [];
+                        for (var i = 0; i < resManager.length; i++) {
+                            if (resManager[i].id !== employeeId) {
+                              managerArray.push(resManager[i].first_name + " " + resManager[i].last_name);
+                            }                             
+                            }           
+                        return managerArray;
+                        }              
+                      }              
+                  ])
+                  .then(answersRole => {
+                    let managerId;
+                    for (var i = 0; i < resManager.length; i++) {
+                      if ((resManager[i].first_name + " " + resManager[i].last_name) === answersRole.choiceManager) {
+                        managerId = resManager[i].id;
+                      }                
+                    }
+                    connection.query("UPDATE employee SET ? WHERE ?",
+                    [{
+                        manager_id: managerId 
+                    },
+                    {
+                        id: employeeId
+                    }],
+                    function(err, res) {
+                        if (err) throw err;
+                        console.log(res.affectedRows + " record updated!\n");
+                        start();
+                    }
+                    );
+                  })          
+             
+            })            
+      });      
+  }); 
+}
+
