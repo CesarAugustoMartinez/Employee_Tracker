@@ -89,7 +89,10 @@ function start() {
             console.clear();
             addEmployee();
             break;
-        
+        case "Update Employee Role":
+            console.clear();
+            updateEmployeeRole();
+            break;
   
         case "Exit":
           connection.end();
@@ -376,6 +379,69 @@ function addEmployee(){
                 function(err, res) {
                     if (err) throw err;
                     console.log(res.affectedRows + " record inserted!\n");
+                    start();
+                }
+                );
+            })            
+      });      
+  }); 
+}
+
+function updateEmployeeRole(){
+  connection.query("SELECT * FROM employee", function(err, resEmployee) {
+  if (err) throw err;
+      connection.query("SELECT * FROM role",function(errEmployee, resRole){
+      if (errEmployee) throw errEmployee;
+      inquirer
+            .prompt([
+              {
+                name: "choiceEmployee",
+                type: "rawlist",
+                message: "Select a Employee to Update The Role:",
+                choices: function() {
+                  let employeeArray = [];
+                  for (var i = 0; i < resEmployee.length; i++) {
+                        employeeArray.push(resEmployee[i].first_name + " " + resEmployee[i].last_name);
+                      }           
+                  return employeeArray;
+                  }                
+                },
+                {
+                name: "choiceRole",
+                type: "rawlist",
+                message: "Select a Role:",
+                choices: function() {
+                  let rolesArray = [];
+                  for (var i = 0; i < resRole.length; i++) {
+                        rolesArray.push(resRole[i].title);
+                      }           
+                  return rolesArray;
+                  }              
+                }              
+            ])
+            .then(answers => {
+                let employeeId;
+                for (var i = 0; i < resEmployee.length; i++) {
+                  if (resEmployee[i].first_name + " " + resEmployee[i].last_name === answers.choiceEmployee) {
+                    employeeId = resEmployee[i].id;
+                  }                
+                }               
+                let roleId;
+                for (var i = 0; i < resRole.length; i++) {
+                  if (resRole[i].title === answers.choiceRole) {
+                    roleId = resRole[i].id;
+                  }                
+                }
+                connection.query("UPDATE employee SET ? WHERE ?",
+                [{
+                    role_id: roleId 
+                },
+                {
+                    id: employeeId
+                }],
+                function(err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " record updated!\n");
                     start();
                 }
                 );
