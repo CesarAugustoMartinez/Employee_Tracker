@@ -32,7 +32,7 @@ connection.connect(function(err) {
 
 
 function start() {
-    inquirer
+    inquirer //To display a menu where the user will select an option
       .prompt({
         name: "action",
         type: "rawlist",
@@ -57,7 +57,7 @@ function start() {
         ]
       })
       .then(function(answer) {
-        switch (answer.action) {
+        switch (answer.action) { // Calling a function according selected option.
         case "View all Employees":
             console.clear();
             viewEmployees();
@@ -101,7 +101,7 @@ function start() {
       });
   }
 
-  function viewEmployees(){
+  function viewEmployees(){ // Function to display all employees from the Database
       console.log("Selecting all Employees....\n");
     var query = "SELECT * FROM employee";
     connection.query(query, function(err, res) {
@@ -111,7 +111,7 @@ function start() {
     });
   }
 
-  function viewRoles(){
+  function viewRoles(){ // Function to display all roles from the Database
     console.log("Selecting all Roles....\n");
   var query = "SELECT * FROM role";
   connection.query(query, function(err, res) {
@@ -121,7 +121,7 @@ function start() {
   });
 }
 
-function viewDepartments(){
+function viewDepartments(){ // Function to display all departments from the Database
     console.log("Selecting all Departments....\n");
   var query = "SELECT * FROM department";
   connection.query(query, function(err, res) {
@@ -177,7 +177,7 @@ function viewEmployeesDepartment(){
   });
 }
 
-function viewEmployeesManager(){
+function viewEmployeesManager(){ // Function to display all employees under a selected manager from the Database
     console.log("Selecting all Managers....\n");
      // query the database for all managers
     connection.query("SELECT e1.id, e1.first_name, e1.last_name FROM employee e1 JOIN employee e2 on e1.id = e2.manager_id", function(err, res) {
@@ -219,7 +219,7 @@ function viewEmployeesManager(){
   });
 }
 
-function addDepartment(){
+function addDepartment(){ // Function to add a new department
   inquirer
         .prompt({            
             name: "name",
@@ -250,7 +250,7 @@ function addDepartment(){
     });
 }
 
-function addRole(){
+function addRole(){ // Function to add a new Role
   connection.query("SELECT * FROM department", function(err, res) {
   if (err) throw err;
   inquirer
@@ -308,7 +308,7 @@ function addRole(){
   }); 
 }
 
-function addEmployee(){
+function addEmployee(){ // Function to add a new employee
   connection.query("SELECT * FROM role", function(err, res) {
   if (err) throw err;
       connection.query("SELECT * FROM employee",function(errEmployee, resEmployee){
@@ -387,15 +387,15 @@ function addEmployee(){
   }); 
 }
 
-function updateEmployeeRole(){
+function updateEmployeeRole(){ // Function to update the role of a selected employee
   connection.query("SELECT * FROM employee", function(err, resEmployee) {
   if (err) throw err;
       connection.query("SELECT * FROM role",function(errEmployee, resRole){
       if (errEmployee) throw errEmployee;
       inquirer
-            .prompt([
+            .prompt([ 
               {
-                name: "choiceEmployee",
+                name: "choiceEmployee", // Prompt list to select the employe who will update the role
                 type: "rawlist",
                 message: "Select a Employee to Update The Role:",
                 choices: function() {
@@ -407,7 +407,7 @@ function updateEmployeeRole(){
                   }                
                 },
                 {
-                name: "choiceRole",
+                name: "choiceRole", // Prompt list to select the new role
                 type: "rawlist",
                 message: "Select a Role:",
                 choices: function() {
@@ -421,7 +421,7 @@ function updateEmployeeRole(){
             ])
             .then(answers => {
                 let employeeId;
-                for (var i = 0; i < resEmployee.length; i++) {
+                for (var i = 0; i < resEmployee.length; i++) { 
                   if (resEmployee[i].first_name + " " + resEmployee[i].last_name === answers.choiceEmployee) {
                     employeeId = resEmployee[i].id;
                   }                
