@@ -39,7 +39,6 @@ function start() {
         message: "What would you like to do?",
         choices: [
           "View all Employees",
-          "View all Employees by Department",
           "View all Employees by Manager",
           "Add Employee",
           "Remove Employee",
@@ -48,7 +47,6 @@ function start() {
           "View all Roles",
           "Add Role",
           "Remove Role",
-          "Update Role",
           "View all Departments",
           "Add Department",
           "Remove Department",
@@ -116,7 +114,11 @@ function start() {
 
   function viewEmployees(){ // Function to display all employees from the Database
       console.log("Selecting all Employees....\n");
-    var query = "SELECT * FROM employee";
+    var query = `SELECT e1.first_name, e1.last_name, role.title, role.salary, concat(e2.first_name, e2.last_name) as Manager, department.name as Department 
+    FROM employee e1 
+    JOIN role on e1.role_id = role.id 
+    left JOIN employee e2 on  e1.manager_id = e2.id
+    JOIN department on role.department_id = department.id order by e1.id`;
     connection.query(query, function(err, res) {
         if (err) throw err;
          console.table(res);
@@ -144,56 +146,10 @@ function viewDepartments(){ // Function to display all departments from the Data
   });
 }
 
-
-function viewEmployeesDepartment(){
-    console.log("Selecting all Employees by Department....\n");
-     // query the database for all departments
-    connection.query("SELECT * FROM department", function(err, res) {
-    if (err) throw err;
-    // once you have the departments, prompt the user for which they'd like 
-    inquirer
-      .prompt([
-        {
-          name: "choice",
-          type: "rawlist",
-          choices: function() {
-            var departmentArray = [];
-            for (var i = 0; i < res.length; i++) {
-              departmentArray.push(res[i].name);
-            }
-            return departmentArray;
-          },
-          message: "What department would you like to select?"
-        }
-      ])
-      .then(function(answer) {
-        // get the information of the chosen department
-        var chosenDepartment;
-        for (var i = 0; i < res.length; i++) {
-          if (res[i].name === answer.choice) {
-            chosenDepartment = res[i];
-          }
-        }
-        var query = "SELECT * FROM employee WHERE ?";
-        connection.query(query,
-            [ 
-             {
-                deparment_id: chosenDepartment.id
-             } 
-            ], 
-            function(err, res) {
-                if (err) throw err;
-                console.table(res);
-                start();
-            });               
-      });
-  });
-}
-
 function viewEmployeesManager(){ // Function to display all employees under a selected manager from the Database
     console.log("Selecting all Managers....\n");
      // query the database for all managers
-    connection.query("SELECT e1.id, e1.first_name, e1.last_name FROM employee e1 JOIN employee e2 on e1.id = e2.manager_id", function(err, res) {
+    connection.query("SELECT e1.id, e1.first_name, e1.last_name FROM employee e1 JOIN employee e2 on e1.id = e2.manager_id group by e1.id", function(err, res) {
     if (err) throw err;
     // once you have the departments, prompt the user for which they'd like
     // console.table(res); 
@@ -393,6 +349,7 @@ function addEmployee(){ // Function to add a new employee
   }); 
 }
 
+
 function updateEmployeeRole(){ // Function to update the role of a selected employee
   connection.query("SELECT * FROM employee", function(err, resEmployee) {
   if (err) throw err;
@@ -408,9 +365,9 @@ function updateEmployeeRole(){ // Function to update the role of a selected empl
                   let employeeArray = [];
                   for (var i = 0; i < resEmployee.length; i++) {
                         employeeArray.push(resEmployee[i].first_name + " " + resEmployee[i].last_name);
-                      }           
+                      }
                   return employeeArray;
-                  }                
+                  }
                 },
                 {
                 name: "choiceRole", // Prompt list to select the new role
@@ -466,7 +423,7 @@ function updateEmployeeManager(){ // Function to update the role of a selected e
               {
                 name: "choiceEmployee", // Prompt list to select the employe who will update the role
                 type: "rawlist",
-                message: "Select a Employee to Update The Role:",
+                message: "Select a Employee to Update its Manager:",
                 choices: function() {
                   let employeeArray = [];
                   for (var i = 0; i < resEmployee.length; i++) {
@@ -549,18 +506,14 @@ function ViewTotalBudgetDepartment(){ // Function to View the total utilized bud
                 }
             ])
             .then(answers => {
-                console.log(answers.choiceDepartment);
-                console.log(resDepartment);
                 let departmentId;
                 for (var i = 0; i < resDepartment.length; i++) { 
                   if (resDepartment[i].name === answers.choiceDepartment) {
                     departmentId = resDepartment[i].id;
                   }                
                 }
-                console.log(departmentId);
                 connection.query("SELECT department.name, sum(role.salary) as Utilized_Budget FROM employee JOIN role on employee.role_id = role.id JOIN department on role.department_id = department.id WHERE department_id = ? GROUP by department.id;",
                 [departmentId],function(err, res) {
-                    console.log(departmentId);
                     if (err) throw err;
                     console.log("Displaying Budget for " + answers.choiceDepartment + " department." + "\n");    
                     console.table(res);
@@ -581,17 +534,18 @@ function removeEmployee(){ // Function to Delete an Employee
           {
             name: "employeeId", // Input to enter employee's id to be deleted
             type: "input",
-            message: "Enter Employee's Id that would like remove:"
+            message: "Enter Employee's Id that would like remove or Press Enter to return: "
           }])
-        .then(answers => {
-            console.log(answers.employeeId);
+        .then(answers => {            
             connection.query("DELETE FROM employee WHERE id = ?;",
             [answers.employeeId],function(err, res) {                    
                 if (err) { 
                   console.log("Can not delete a parent record, This employee is manager. \n");
                   start();
                 } else {
-                console.log("Employee deleted...." + "\n");    
+                if (res.affectedRows != 0) {
+                       console.log("Employee deleted...." + "\n");    
+                    }
                 start();
               }
             }
