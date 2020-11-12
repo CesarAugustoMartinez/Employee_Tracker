@@ -97,6 +97,16 @@ function start() {
             console.clear();
             updateEmployeeManager();
             break;
+        case "Remove Employee":
+            console.clear();
+            removeEmployee();
+            break;    
+
+        case "View the total utilized budget of a Department":
+            console.clear();
+            ViewTotalBudgetDepartment();
+            break;
+
         case "Exit":
           connection.end();
           break;
@@ -351,13 +361,6 @@ function addEmployee(){ // Function to add a new employee
                 }
             ])
             .then(answers => {
-                // Searching department Id from query.
-                // let roleId;
-                // connection.query(`SELECT id FROM role WHERE title = '${answers.choiceRole}'`, function(err,res){
-                //   if (err) throw err;
-                //   console.table(res);
-                //   roleId = res.id;
-                // });
                 let managerId;
                 for (var i = 0; i < resEmployee.length; i++) {
                   if (resEmployee[i].first_name + " " + resEmployee[i].last_name === answers.choiceManager) {
@@ -525,3 +528,74 @@ function updateEmployeeManager(){ // Function to update the role of a selected e
   }); 
 }
 
+
+
+function ViewTotalBudgetDepartment(){ // Function to View the total utilized budget of a Department
+  connection.query("SELECT * FROM department", function(err, resDepartment) {
+  if (err) throw err;
+      inquirer
+            .prompt([ 
+              {
+                name: "choiceDepartment", // Prompt list to select the deparment to view its budget
+                type: "rawlist",
+                message: "Select a Department",
+                choices: function() {
+                  let departmentArray = [];
+                  for (var i = 0; i < resDepartment.length; i++) {
+                        departmentArray.push(resDepartment[i].name);
+                      }           
+                  return departmentArray;
+                  }                
+                }
+            ])
+            .then(answers => {
+                console.log(answers.choiceDepartment);
+                console.log(resDepartment);
+                let departmentId;
+                for (var i = 0; i < resDepartment.length; i++) { 
+                  if (resDepartment[i].name === answers.choiceDepartment) {
+                    departmentId = resDepartment[i].id;
+                  }                
+                }
+                console.log(departmentId);
+                connection.query("SELECT department.name, sum(role.salary) as Utilized_Budget FROM employee JOIN role on employee.role_id = role.id JOIN department on role.department_id = department.id WHERE department_id = ? GROUP by department.id;",
+                [departmentId],function(err, res) {
+                    console.log(departmentId);
+                    if (err) throw err;
+                    console.log("Displaying Budget for " + answers.choiceDepartment + " department." + "\n");    
+                    console.table(res);
+                    start();
+                }
+                );
+              })            
+            })            
+}
+
+
+function removeEmployee(){ // Function to Delete an Employee
+  connection.query("SELECT * FROM employee", function(err, resEmployee) {
+  if (err) throw err;
+  console.table(resEmployee);
+  inquirer
+        .prompt([ 
+          {
+            name: "employeeId", // Input to enter employee's id to be deleted
+            type: "input",
+            message: "Enter Employee's Id that would like remove:"
+          }])
+        .then(answers => {
+            console.log(answers.employeeId);
+            connection.query("DELETE FROM employee WHERE id = ?;",
+            [answers.employeeId],function(err, res) {                    
+                if (err) { 
+                  console.log("Can not delete a parent record, This employee is manager. \n");
+                  start();
+                } else {
+                console.log("Employee deleted...." + "\n");    
+                start();
+              }
+            }
+            );
+          })
+    });                             
+}
