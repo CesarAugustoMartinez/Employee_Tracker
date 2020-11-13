@@ -1,6 +1,6 @@
 # Employee_Tracker
 
-![picture](public/assets/images/noteTakerIndex.png)
+![picture](assets/images/videoApp.gif)
 
 Links : [Video](https://afternoon-island-56967.herokuapp.com/), [Repository](https://github.com/CesarAugustoMartinez/Employee_Tracker)
 
