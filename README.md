@@ -2,7 +2,7 @@
 
 ![picture](assets/images/videoApp.gif)
 
-Links : [Video](https://afternoon-island-56967.herokuapp.com/), [Repository](https://github.com/CesarAugustoMartinez/Employee_Tracker)
+Links : [Video](https://cesaraugustomartinez.github.io/Employee_Tracker/video.html), [Repository](https://github.com/CesarAugustoMartinez/Employee_Tracker)
 
 ---
 
