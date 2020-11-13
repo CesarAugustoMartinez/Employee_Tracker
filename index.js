@@ -99,7 +99,14 @@ function start() {
             console.clear();
             removeEmployee();
             break;    
-
+        case "Remove Role":
+            console.clear();
+            removeRole();
+            break; 
+        case "Remove Department":
+            console.clear();
+            removeDepartment();
+            break;   
         case "View the total utilized budget of a Department":
             console.clear();
             ViewTotalBudgetDepartment();
@@ -545,6 +552,66 @@ function removeEmployee(){ // Function to Delete an Employee
                 } else {
                 if (res.affectedRows != 0) {
                        console.log("Employee deleted...." + "\n");    
+                    }
+                start();
+              }
+            }
+            );
+          })
+    });                             
+}
+
+
+function removeRole(){ // Function to Delete a Role
+  connection.query("SELECT * FROM role", function(err, resRole) {
+  if (err) throw err;
+  console.table(resRole);
+  inquirer
+        .prompt([ 
+          {
+            name: "roleId", // Input to enter role's id to be deleted
+            type: "input",
+            message: "Enter Role's Id that you would like remove or Press Enter to return: "
+          }])
+        .then(answers => {            
+            connection.query("DELETE FROM role WHERE id = ?;",
+            [answers.roleId],function(err, res) {                    
+                if (err) { // Condition to control if the role is used by an employee
+                  console.log("Can not delete a parent record, This role is being used by at least for an employee. \n");
+                  start();
+                } else {
+                if (res.affectedRows != 0) {
+                       console.log("Role deleted...." + "\n");    
+                    }
+                start();
+              }
+            }
+            );
+          })
+    });                             
+}
+
+
+function removeDepartment(){ // Function to Delete a Role
+  connection.query("SELECT * FROM department", function(err, resDepartment) {
+  if (err) throw err;
+  console.table(resDepartment);
+  inquirer
+        .prompt([ 
+          {
+            name: "departmentId", // Input to enter role's id to be deleted
+            type: "input",
+            message: "Enter Department's Id that you would like remove or Press Enter to return: "
+          }])
+        .then(answers => {            
+            connection.query("DELETE FROM department WHERE id = ?;",
+            [answers.departmentId],function(err, res) {                    
+                if (err) { // Condition to control if the role is used by an employee
+                  console.log("Can not delete a parent record, This department is being used by at least for a Role. \n");
+                  start();
+                } else {
+                if (res.affectedRows != 0) {
+                       console.log("Department deleted...." + "\n");    
                     }
                 start();
               }
